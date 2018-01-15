@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jm.employees.dao.EmployeesDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.jm.employees.entity.Employees" id="employeesMap">
+        <result property="empNo" column="emp_no"/>
+        <result property="birthDate" column="birth_date"/>
+        <result property="firstName" column="first_name"/>
+        <result property="lastName" column="last_name"/>
+        <result property="gender" column="gender"/>
+        <result property="hireDate" column="hire_date"/>
+
+    </resultMap>
+
+	<sql id="queryListCondition" >
+		<where>
+						<if test="empNo != null and empNo !=''">
+					and emp_no = #{empNo}
+				</if>
+						<if test="birthDate != null and birthDate !=''">
+					and birth_date = #{birthDate}
+				</if>
+						<if test="firstName != null and firstName !=''">
+					and first_name = #{firstName}
+				</if>
+						<if test="lastName != null and lastName !=''">
+					and last_name = #{lastName}
+				</if>
+						<if test="gender != null and gender !=''">
+					and gender = #{gender}
+				</if>
+						<if test="hireDate != null and hireDate !=''">
+					and hire_date = #{hireDate}
+				</if>
+				</where>
+	</sql>
+	
+	<!-- 根据id查询，关联其它表 -->
+	<select id="queryObjectById" resultMap="employeesMap">
+		select * from employees where emp_no = #{value}
+	</select>
+	
+	<!--一对一或多对一　给其它xml关联调用，使用resultType就不再关联其它表了，防止回环查询 -->
+	<select id="queryOneById" resultType="com.jm.employees.entity.Employees">
+		select * from employees where emp_no = #{value}
+	</select>
+	
+	
+	
+	<select id="queryObject" resultMap="employeesMap">
+		select * from employees 
+		<include refid="queryListCondition"></include>
+	</select>
+
+	<select id="queryList" resultMap="employeesMap">
+		select * from employees
+		<include refid="queryListCondition"></include>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+			<otherwise>
+                order by emp_no desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from employees 
+		<include refid="queryListCondition"></include>
+	</select>
+	 
+	<insert id="save" parameterType="com.jm.employees.entity.Employees">
+		insert into employees
+		(
+			`emp_no`, 
+			`birth_date`, 
+			`first_name`, 
+			`last_name`, 
+			`gender`, 
+			`hire_date`
+		)
+		values
+		(
+			#{empNo}, 
+			#{birthDate}, 
+			#{firstName}, 
+			#{lastName}, 
+			#{gender}, 
+			#{hireDate}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.jm.employees.entity.Employees">
+		update employees 
+		<set>
+			<if test="birthDate != null">`birth_date` = #{birthDate}, </if>
+			<if test="firstName != null">`first_name` = #{firstName}, </if>
+			<if test="lastName != null">`last_name` = #{lastName}, </if>
+			<if test="gender != null">`gender` = #{gender}, </if>
+			<if test="hireDate != null">`hire_date` = #{hireDate}</if>
+		</set>
+		where emp_no = #{empNo}
+	</update>
+	
+	<delete id="delete">
+		delete from employees where emp_no = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from employees where emp_no in 
+		<foreach item="empNo" collection="array" open="(" separator="," close=")">
+			#{empNo}
+		</foreach>
+	</delete>
+
+</mapper>
