@@ -1,6 +1,7 @@
 package com.jm.utils;
 
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,6 +18,17 @@ public class Query extends LinkedHashMap<String, Object> {
 
     public Query(Map<String, Object> params){
         this.putAll(params);
+        
+        if(params == null || !params.containsKey("page") || !params.containsKey("limit"))
+        {
+        	if(params == null)
+        	{
+        		params = new HashMap<String, Object>();
+        	}
+        	
+        	params.put("page", 1);
+        	params.put("limit", 20);
+        }
 
         //分页参数
         this.page = Integer.parseInt(params.get("page").toString());
